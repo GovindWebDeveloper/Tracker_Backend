@@ -10,7 +10,8 @@ connectDB();
 
 const app = express();
 app.use(cors({
-    origin:"https://attendance-tracker-ruby-alpha.vercel.app"
+    origin:"https://attendance-tracker-ruby-alpha.vercel.app",
+    credentials:true
 }));
 app.use(express.json());
 app.use("/api/auth", authRoutes);
