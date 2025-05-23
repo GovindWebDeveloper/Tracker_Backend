@@ -6,17 +6,22 @@ const attendanceSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  username: { type: String },
   date: { type: String, required: true },
-  punchIn: { type: String },
-  punchOut: { type: String },
-  breaks: [
+  punches: [
     {
-      breakIn: { type: String },
-      breakOut: { type: String },
+      punchIn: { type: String },
+      punchOut: { type: String },
     },
   ],
-  workSeconds: { type: Number },
-  breakSeconds: { type: Number },
+  // breaks: [
+  //   {
+  //     breakIn: { type: String },
+  //     breakOut: { type: String },
+  //   },
+  // ],
+  // workSeconds: { type: Number, default: 0 },
+  // breakSeconds: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

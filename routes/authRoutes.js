@@ -1,11 +1,9 @@
 const express = require("express");
-const { register, login } = require("../controllers/authController");
+const { loginOrRegister } = require("../controllers/authController");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
-
+router.post("/login", loginOrRegister);
 router.get("/user-dashboard", protect, (req, res) => {
   res.send(`Welcome user: ${req.user.id}`);
 });
