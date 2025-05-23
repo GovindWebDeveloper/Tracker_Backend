@@ -10,7 +10,7 @@ connectDB();
 
 const app = express();
 app.use(cors({
-    origin:"https://attendance-tracker-19w6wv4jq-govind-kumars-projects-d18fa27b.vercel.app/",
+    origin:"https://attendance-tracker-19w6wv4jq-govind-kumars-projects-d18fa27b.vercel.app",
     credentials:true
 }));
 app.use(express.json());
