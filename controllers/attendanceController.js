@@ -9,7 +9,7 @@ function calculateWorkAndBreak(punches = [], signs = [], date) {
   let extraMs = 0;
 
   // Use consistent format for parsing
-  const timeFormat = "YYYY-MM-DD HH:mm:ss a";
+  const timeFormat = "YYYY-MM-DD h:mm:ss a";
 
   const validPunches = punches.filter((p) => p.punchIn && p.punchOut);
   validPunches.sort((a, b) =>
@@ -94,7 +94,7 @@ exports.punchIn = async (req, res) => {
     }
 
     // Use 24-hour format for all times
-    const punchInTime = moment().tz("Asia/Kolkata").format("HH:mm:ss a");
+    const punchInTime = moment().tz("Asia/Kolkata").format("h:mm:ss a");
     attendance.punches.push({
       punchIn: punchInTime,
       sessionActive: true,
@@ -138,7 +138,7 @@ exports.punchOut = async (req, res) => {
       return res.status(400).json({ msg: "No active punch-in to punch out" });
     }
 
-    lastPunch.punchOut = moment().tz("Asia/Kolkata").format("HH:mm:ss a");
+    lastPunch.punchOut = moment().tz("Asia/Kolkata").format("h:mm:ss a");
     lastPunch.sessionActive = false;
 
     attendance.markModified("punches");
@@ -178,11 +178,11 @@ exports.signOut = async (req, res) => {
     const lastSign = attendance.signs[attendance.signs.length - 1];
 
     if (lastSign && !lastSign.signOut) {
-      lastSign.signOut = moment().tz("Asia/Kolkata").format("HH:mm:ss a");
+      lastSign.signOut = moment().tz("Asia/Kolkata").format("h:mm:ss a");
     } else {
       attendance.signs.push({
         signIn: null,
-        signOut: moment().tz("Asia/Kolkata").format("HH:mm:ss a"),
+        signOut: moment().tz("Asia/Kolkata").format("h:mm:ss a"),
       });
     }
 
