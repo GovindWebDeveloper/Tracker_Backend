@@ -6,11 +6,8 @@ const authRoutes = require("./routes/authRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 
 const allowedOrigins = [
-  "https://attendance-tracker-19w6wv4jq-govind-kumars-projects-d18fa27b.vercel.app",
-  "https://attendance-tracker-mbraydf0b-govind-kumars-projects-d18fa27b.vercel.app",
-  "https://attendance-tracker-q36hgngjs-govind-kumars-projects-d18fa27b.vercel.app",
+  "https://attendance-tracker-orcin.vercel.app",
   "http://localhost:5173",
-  "https://attendance-tracker-alpha-beige.vercel.app/",
 ];
 
 dotenv.config();
