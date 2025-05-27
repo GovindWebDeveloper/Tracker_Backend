@@ -14,14 +14,15 @@ const attendanceSchema = new mongoose.Schema({
       punchOut: { type: String },
     },
   ],
-  // breaks: [
-  //   {
-  //     breakIn: { type: String },
-  //     breakOut: { type: String },
-  //   },
-  // ],
-  // workSeconds: { type: Number, default: 0 },
-  // breakSeconds: { type: Number, default: 0 },
+  signs: [
+    {
+      signOut: { type: String },
+      signIn: { type: String },
+    },
+  ],
+  workHours: { type: Number, default: 0 },
+  breakHours: { type: Number, default: 0 },
+  extraHoursToSkip: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

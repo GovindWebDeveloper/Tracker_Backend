@@ -8,6 +8,7 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const allowedOrigins = [
   "https://attendance-tracker-19w6wv4jq-govind-kumars-projects-d18fa27b.vercel.app",
   "https://attendance-tracker-mbraydf0b-govind-kumars-projects-d18fa27b.vercel.app",
+
 ];
 
 dotenv.config();
@@ -20,7 +21,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("cors not allowed for this origin"));
+        callback(new Error("CORS not allowed for this origin"));
       }
     },
     credentials: true,
