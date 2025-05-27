@@ -1,6 +1,6 @@
 const Attendance = require("../models/attendance");
 const User = require("../models/user");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 // Calculation Utility
 function calculateWorkAndBreak(punches = [], signs = [], date) {
@@ -68,7 +68,7 @@ function formatDuration(ms) {
 exports.punchIn = async (req, res) => {
   try {
     const userId = req.user.id;
-    const date = moment().format("YYYY-MM-DD");
+    const date = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ msg: "User not found" });
@@ -94,7 +94,7 @@ exports.punchIn = async (req, res) => {
     }
 
     // Use 24-hour format for all times
-    const punchInTime = moment().format("HH:mm:ss a");
+    const punchInTime = moment().tz("Asia/Kolkata").format("HH:mm:ss a");
     attendance.punches.push({
       punchIn: punchInTime,
       sessionActive: true,
@@ -127,7 +127,7 @@ exports.punchIn = async (req, res) => {
 exports.punchOut = async (req, res) => {
   try {
     const userId = req.user.id;
-    const date = moment().format("YYYY-MM-DD");
+    const date = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
 
     const attendance = await Attendance.findOne({ userId, date });
     if (!attendance)
@@ -138,7 +138,7 @@ exports.punchOut = async (req, res) => {
       return res.status(400).json({ msg: "No active punch-in to punch out" });
     }
 
-    lastPunch.punchOut = moment().format("HH:mm:ss a");
+    lastPunch.punchOut = moment().tz("Asia/Kolkata").format("HH:mm:ss a");
     lastPunch.sessionActive = false;
 
     attendance.markModified("punches");
@@ -178,11 +178,11 @@ exports.signOut = async (req, res) => {
     const lastSign = attendance.signs[attendance.signs.length - 1];
 
     if (lastSign && !lastSign.signOut) {
-      lastSign.signOut = moment().format("HH:mm:ss a");
+      lastSign.signOut = moment().tz("Asia/Kolkata").format("HH:mm:ss a");
     } else {
       attendance.signs.push({
         signIn: null,
-        signOut: moment().format("HH:mm:ss a"),
+        signOut: moment().tz("Asia/Kolkata").format("HH:mm:ss a"),
       });
     }
 
