@@ -8,28 +8,38 @@ function calculateWorkAndBreak(punches = [], signs = [], date) {
   let breakMs = 0;
   let extraMs = 0;
 
+  // Use consistent format for parsing
+  const timeFormat = "YYYY-MM-DD HH:mm:ss a";
+
   const validPunches = punches.filter((p) => p.punchIn && p.punchOut);
   validPunches.sort((a, b) =>
-    moment(`${date} ${a.punchIn}`).diff(moment(`${date} ${b.punchIn}`))
+    moment(`${date} ${a.punchIn}`, timeFormat).diff(
+      moment(`${date} ${b.punchIn}`, timeFormat)
+    )
   );
 
   const validSigns = signs.filter((s) => s.signOut && s.signIn);
   validSigns.sort((a, b) =>
-    moment(`${date} ${a.signOut}`).diff(moment(`${date} ${b.signIn}`))
+    moment(`${date} ${a.signOut}`, timeFormat).diff(
+      moment(`${date} ${b.signIn}`, timeFormat)
+    )
   );
 
   // Work time
   for (const p of validPunches) {
-    const inTime = moment(`${date} ${p.punchIn}`);
-    const outTime = moment(`${date} ${p.punchOut}`);
+    const inTime = moment(`${date} ${p.punchIn}`, timeFormat);
+    const outTime = moment(`${date} ${p.punchOut}`, timeFormat);
     if (outTime.isBefore(inTime)) outTime.add(1, "day");
     workMs += outTime.diff(inTime);
   }
 
   // Break time (gaps between punch sessions)
   for (let i = 0; i < validPunches.length - 1; i++) {
-    const outTime = moment(`${date} ${validPunches[i].punchOut}`);
-    const nextInTime = moment(`${date} ${validPunches[i + 1].punchIn}`);
+    const outTime = moment(`${date} ${validPunches[i].punchOut}`, timeFormat);
+    const nextInTime = moment(
+      `${date} ${validPunches[i + 1].punchIn}`,
+      timeFormat
+    );
     if (nextInTime.isBefore(outTime)) nextInTime.add(1, "day");
     const gap = nextInTime.diff(outTime);
     if (gap > 0) breakMs += gap;
@@ -37,8 +47,8 @@ function calculateWorkAndBreak(punches = [], signs = [], date) {
 
   // Extra time from signs
   for (const s of validSigns) {
-    const outTime = moment(`${date} ${s.signOut}`);
-    const inTime = moment(`${date} ${s.signIn}`);
+    const outTime = moment(`${date} ${s.signOut}`, timeFormat);
+    const inTime = moment(`${date} ${s.signIn}`, timeFormat);
     if (inTime.isBefore(outTime)) inTime.add(1, "day");
     extraMs += inTime.diff(outTime);
   }
@@ -54,7 +64,7 @@ function formatDuration(ms) {
   )}h ${duration.minutes()}m ${duration.seconds()}s`;
 }
 
-// 🔥 Punch In
+//  Punch In
 exports.punchIn = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -83,7 +93,8 @@ exports.punchIn = async (req, res) => {
         .json({ msg: "Already punched in. Punch out first." });
     }
 
-    const punchInTime = moment().format("HH:mm:ss");
+    // Use 24-hour format for all times
+    const punchInTime = moment().format("HH:mm:ss a");
     attendance.punches.push({
       punchIn: punchInTime,
       sessionActive: true,
@@ -93,6 +104,7 @@ exports.punchIn = async (req, res) => {
     const lastSign = attendance.signs[attendance.signs.length - 1];
     if (lastSign && lastSign.signOut && !lastSign.signIn) {
       lastSign.signIn = punchInTime;
+      attendance.markModified("signs");
     }
 
     const { extraMs } = calculateWorkAndBreak(
@@ -103,7 +115,6 @@ exports.punchIn = async (req, res) => {
     attendance.extraHoursToSkip = extraMs;
 
     attendance.markModified("punches");
-    attendance.markModified("signs");
     await attendance.save();
 
     res.status(200).json({ msg: "Punch In successful", attendance });
@@ -112,7 +123,7 @@ exports.punchIn = async (req, res) => {
   }
 };
 
-// 🔥 Punch Out
+//  Punch Out
 exports.punchOut = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -127,7 +138,7 @@ exports.punchOut = async (req, res) => {
       return res.status(400).json({ msg: "No active punch-in to punch out" });
     }
 
-    lastPunch.punchOut = moment().format("HH:mm:ss");
+    lastPunch.punchOut = moment().format("HH:mm:ss a");
     lastPunch.sessionActive = false;
 
     attendance.markModified("punches");
@@ -148,7 +159,6 @@ exports.punchOut = async (req, res) => {
   }
 };
 
-// 🔥 Updated Sign Out Logic: only if punched in again
 exports.signOut = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -159,27 +169,20 @@ exports.signOut = async (req, res) => {
       return res.status(400).json({ msg: "No attendance record found" });
     }
 
-    // 🔥 Check: Has user punched in at least once
     const validPunches = attendance.punches.filter((p) => p.punchIn);
     if (validPunches.length === 0) {
       return res
         .status(400)
         .json({ msg: "You must punch in before signing out." });
     }
-
-    // 🔥 Check: Is there a punchIn without punchOut (active session)
-    const lastPunch = validPunches[validPunches.length - 1];
-
-    // 🔥 Check: Last sign already completed?
     const lastSign = attendance.signs[attendance.signs.length - 1];
 
-    // 🔥 Proceed with sign out
     if (lastSign && !lastSign.signOut) {
-      lastSign.signOut = moment().format("HH:mm:ss");
+      lastSign.signOut = moment().format("HH:mm:ss a");
     } else {
       attendance.signs.push({
         signIn: null,
-        signOut: moment().format("HH:mm:ss"),
+        signOut: moment().format("HH:mm:ss a"),
       });
     }
 
@@ -193,9 +196,6 @@ exports.signOut = async (req, res) => {
   }
 };
 
-// ... (rest of your functions unchanged)
-
-// Attendance retrievals
 exports.getAttendanceByUser = async (req, res) => {
   try {
     const userId = req.user.id;
